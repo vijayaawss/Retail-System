@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="grid-head reports-head">
+    <div>
+      <div class="hello">Reports</div>
+      <div class="subtitle">Date-wise business report</div>
+    </div>
+  </div>
+
+
+  <div class="panel panel-hero" data-animate style="margin-top:6px;">
+    <div class="panel-title">Generate Report</div>
+    <div class="panel-sub">Choose a date to view full-day sales and inventory insights.</div>
+
+    <form class="form form-compact" method="get" action="{{ url_for('reports') }}" style="margin-top:14px;">
+      <div class="field">
+        <label for="reportDate">Date</label>
+        <input id="reportDate" type="date" name="date" value="{{ selected_date }}" required />
+      </div>
+      <div class="form-actions" style="align-items:flex-end;">
+        <button class="btn" type="submit">Generate Report</button>
+      </div>
+    </form>
+  </div>
+
+  {% if show_report %}
+    <div class="business-summary-shell" data-animate>
+      <div class="business-summary-head">
+        <div class="business-summary-title">Business Summary • {{ selected_date }}</div>
+        <div class="business-summary-sub">Overview of key performance metrics for the selected day.</div>
+      </div>
+
+      <div class="business-summary-grid">
+        <!-- ROW 1: Revenue Cards -->
+        {% set difference = (report_today_revenue|float) - (report_prev_day_revenue|float) %}
+        {% set delta = difference %}
+
+
+        <div class="business-summary-row">
+          <div class="elev-metric-card elev-metric-card--premium">
+            <div class="elev-metric-top">
+              <div class="mini-square-badge mini-square-badge--muted" aria-hidden="true">💳</div>
+              <div class="metric-label">Today’s Revenue</div>
+            </div>
+            <div class="metric-value metric-value--plain">₹ {{ '{:,.2f}'.format(report_today_revenue|float) }}</div>
+          </div>
+
+          <div class="elev-metric-card elev-metric-card--premium">
+            <div class="elev-metric-top">
+              <div class="mini-square-badge mini-square-badge--muted" aria-hidden="true">🕒</div>
+              <div class="metric-label">Previous Day Revenue</div>
+            </div>
+            <div class="metric-value metric-value--medium">₹ {{ '{:,.2f}'.format(report_prev_day_revenue|float) }}</div>
+            
+          </div>
+
+            <div class="elev-metric-card elev-metric-card--premium">
+              <div class="elev-metric-top">
+                <div class="mini-square-badge {% if delta > 0 %}mini-square-badge--pos{% elif delta < 0 %}mini-square-badge--neg{% else %}mini-square-badge--muted{% endif %}" aria-hidden="true">
+                  {% if delta > 0 %}📈{% elif delta < 0 %}📉{% else %}➖{% endif %}
+                </div>
+                <div class="metric-label">
+                  {% if delta > 0 %}Revenue Increased By{% elif delta < 0 %}Revenue Decreased By{% else %}No Revenue Change{% endif %}
+                </div>
+              </div>
+              <div class="metric-value metric-value--change {% if delta > 0 %}metric-value--up{% elif delta < 0 %}metric-value--down{% else %}metric-value--neutral{% endif %}">
+                {% if delta > 0 %}+{% elif delta < 0 %}-{% else %}±{% endif %}₹ {{ '{:,.0f}'.format(delta|abs) }}
+              </div>
+            </div>
+
+
+        </div>
+
+        <!-- ROW 2: Metrics + Payment Split -->
+        <div class="business-summary-row business-summary-row--split">
+          <div class="compact-metrics">
+            <div class="compact-card">
+              <div class="compact-icon" aria-hidden="true">📦</div>
+              <div class="compact-value compact-value--plain">{{ report_total_products_sold }}</div>
+              <div class="compact-caption">Total Products Sold</div>
+            </div>
+
+            <div class="compact-card">
+              <div class="compact-icon" aria-hidden="true">🧾</div>
+              <div class="compact-value compact-value--plain">{{ report_total_transactions }}</div>
+              <div class="compact-caption">Total Transactions</div>
+            </div>
+
+            <div class="compact-card compact-card--wide">
+            <div class="compact-icon" aria-hidden="true">🏆</div>
+              <div class="compact-value compact-value--product">{{ report_best_selling_product }}</div>
+              <div class="compact-caption">Best Selling Product</div>
+            </div>
+          </div>
+
+
+          <div class="payment-split payment-split--premium">
+            <div class="payment-split-title">Payment Split</div>
+            <div class="payment-split-body payment-split-body--premium">
+              <div class="donut-wrap donut-wrap--premium">
+
+                {% set cash = report_cash_revenue|float %}
+                {% set upi = report_upi_revenue|float %}
+                {% set total = cash + upi %}
+                {% set cash_pct = report_cash_pct|float %}
+                {% set upi_pct = report_upi_pct|float %}
+
+                {% set cash_pct_norm = cash_pct if cash_pct is not none else 0 %}
+                {% set upi_pct_norm = upi_pct if upi_pct is not none else 0 %}
+
+                <svg class="donut donut--thick" viewBox="0 0 42 42" role="img" aria-label="Cash and UPI revenue donut">
+                  {% set r = 15.9155 %}
+                  {% set c = r*2*3.1415926535 %}
+                  {% if total <= 0 %}
+                    {% set cash_draw = 0 %}
+                    {% set upi_draw = 0 %}
+                  {% else %}
+                    {% set cash_draw = (cash_pct_norm/100.0) * c %}
+                    {% set upi_draw = (upi_pct_norm/100.0) * c %}
+                  {% endif %}
+
+                  <circle class="donut-bg" cx="21" cy="21" r="{{ r }}" fill="none" stroke-width="7"/>
+                  <circle class="donut-seg donut-seg--cash" cx="21" cy="21" r="{{ r }}" fill="none" stroke-width="7"
+                          stroke-dasharray="{{ '%.4f'|format(cash_draw) }} {{ '%.4f'|format(c - cash_draw) }}"
+                          stroke-dashoffset="0"
+                          transform="rotate(-90 21 21)"
+                          stroke-linecap="round"/>
+                  <circle class="donut-seg donut-seg--upi" cx="21" cy="21" r="{{ r }}" fill="none" stroke-width="7"
+                          stroke-dasharray="{{ '%.4f'|format(upi_draw) }} {{ '%.4f'|format(c - upi_draw) }}"
+                          stroke-dashoffset="-{{ '%.4f'|format(cash_draw) }}"
+                          transform="rotate(-90 21 21)"
+                          stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <div class="payment-split-legend payment-split-legend--premium">
+                <div class="legend-item">
+                  <span class="legend-dot legend-dot--cash" aria-hidden="true"></span>
+                  <div class="legend-label">Cash</div>
+                  <div class="legend-amount">₹ {{ '{:,.0f}'.format(cash) }} ({{ '{:,.0f}'.format(cash_pct_norm) }}%)</div>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot legend-dot--upi" aria-hidden="true"></span>
+                  <div class="legend-label">UPI</div>
+                  <div class="legend-amount">₹ {{ '{:,.0f}'.format(upi) }} ({{ '{:,.0f}'.format(upi_pct_norm) }}%)</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Sales table -->
+    <div class="panel reports-table-wrap" data-animate style="margin-top:14px;">
+      <div class="reports-table-head">
+        <div class="reports-table-title">Sales Report</div>
+        <div class="reports-table-sub">Full day • {{ selected_date }}</div>
+      </div>
+
+      <div class="reports-table-box">
+        <table class="table reports-table" id="salesReportTable">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Quantity Sold</th>
+              <th>Revenue Generated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if report_sales_rows %}
+              {% for r in report_sales_rows %}
+                <tr class="sales-row">
+                  <td>{{ r.product_name }}</td>
+                  <td>{{ r.qty }}</td>
+                  <td>₹ {{ '{:,.2f}'.format(r.revenue|float) }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="3">
+                  <div class="table-empty">
+                    <div class="table-empty-illus" aria-hidden="true">🧾</div>
+                    <div class="table-empty-title">No sales for this date</div>
+                    <div class="table-empty-sub">Try selecting a different day.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  {% else %}
+
+    <div class="panel" data-animate style="margin-top:14px;">
+      <div class="panel-title">📄 No report generated yet</div>
+      <div class="panel-sub">Select a date and click <b>Generate Report</b> to view sales insights.</div>
+    </div>
+  {% endif %}
+
+{% endblock %}
+
+
+
+

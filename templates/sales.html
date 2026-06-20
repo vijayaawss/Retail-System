@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="panel panel-hero" data-animate>
+    <div class="panel-title">Sales Entry</div>
+    <div class="panel-sub">Choose a product and quantity. Total price is calculated live.</div>
+
+    <form method="post" class="form form-compact" id="saleForm" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label>Product</label>
+          <select name="product_id" id="product_id" required>
+            <option value="">Select product</option>
+            {% for p in products %}
+              <option value="{{ p.id }}" data-price="{{ p.price }}" data-stock="{{ p.stock }}">{{ p.name }} (₹ {{ '%.2f'|format(p.price) }})</option>
+            {% endfor %}
+          </select>
+          <div class="error" id="productErr"></div>
+        </div>
+
+        <div class="field">
+          <label>Payment Type</label>
+          <select name="payment_type" id="payment_type" required>
+            <option value="">Select payment type</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Quantity</label>
+          <input type="number" name="quantity" id="quantity" min="1" value="1" required />
+          <div class="error" id="qtyErr"></div>
+        </div>
+      </div>
+
+
+      <div class="field-row">
+        <div class="field">
+          <label>Unit Price (₹)</label>
+          <input type="text" id="unit_price_view" disabled value="0.00" />
+        </div>
+        <div class="field">
+          <label>Total Price (₹)</label>
+          <input type="text" id="total_price_view" disabled value="0.00" />
+        </div>
+      </div>
+
+      <input type="hidden" name="unit_price" id="unit_price" value="0" />
+      <input type="hidden" name="total_price" id="total_price" value="0" />
+
+      <div class="form-actions">
+        <button class="btn" type="submit">Save Sale</button>
+        <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+      </div>
+
+      <div class="note" id="stockNote"></div>
+    </form>
+  </div>
+{% endblock %}
+

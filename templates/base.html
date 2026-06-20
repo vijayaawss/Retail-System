@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title or 'DailyInsight' }}</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    {% if session.get('user_id') %}
+    <aside class="sidebar" id="sidebar">
+
+      <div class="brand">
+        <div class="brand-mark">DI</div>
+        <div class="brand-text">
+          <div class="brand-name">DailyInsight</div>
+          <div class="brand-sub">Smart Retail</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-link" href="{{ url_for('dashboard') }}" data-active="dashboard">
+          <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('sales_entry') }}" data-active="sales">
+          <span class="nav-icon">🛒</span><span class="nav-label">Sales Entry</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('stock_management') }}" data-active="stock">
+          <span class="nav-icon">📦</span><span class="nav-label">Stock</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('reports') }}" data-active="reports">
+          <span class="nav-icon">📊</span><span class="nav-label">Reports</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('monthly_reports') }}" data-active="monthly-reports">
+          <span class="nav-icon">🗓️</span><span class="nav-label">Monthly Report</span>
+        </a>
+      </nav>
+
+
+      <div class="sidebar-footer">
+        <a class="nav-link logout" href="{{ url_for('logout') }}">
+          <span class="nav-icon">🚪</span><span class="nav-label">Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <button class="icon-btn" id="toggleSidebar" aria-label="Toggle sidebar">☰</button>
+        <div class="topbar-title">{{ page_title or 'Dashboard' }}</div>
+        <div class="topbar-actions">
+          <div class="theme-toggle">
+            <button type="button" class="theme-btn" id="themeToggle" aria-label="Toggle light/dark">☀️</button>
+          </div>
+        </div>
+
+      </header>
+
+
+      <section class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-container" id="flashContainer">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}" data-flash="{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </section>
+
+      <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+    </main>
+
+    {% else %}
+    <main class="landing">
+      <div class="landing-bg" aria-hidden="true">
+        <img class="landing-bg__img" src="/static/bg_img.png" alt="" />
+        <div class="landing-bg__overlay"></div>
+      </div>
+
+      <div class="landing-grid">
+        <section class="landing-hero">
+          <div class="landing-hero__inner">
+            
+            <h1 class="hero-title">
+              <span class="gradient-text">Smart Retail</span>
+              <br>
+              <span class="white-text">System</span>
+            </h1>
+
+            <div class="hero-divider" aria-hidden="true"></div>
+            <div>_________________________________________________________</div>
+            <div class="hero-desc hero-desc--stack">
+              <div>Manage sales, inventory, and reports in one place.</div>
+              <div>Track stock automatically, record daily sales, and get insights instantly.</div>
+            </div>
+
+            <p style="color: #ffffff;">Simple. Smart. Secure.</p>
+
+            <div class="hero-actions">
+              <a class="btn" href="{{ url_for('signup') }}">Get Started</a>
+            </div>
+
+
+
+
+            <div class="hero-features">
+              <div class="feature-card">
+                <div class="feature-icon">📈</div>
+
+                <div class="feature-title">Track Sales</div>
+                <div class="feature-sub">Record payments and view performance.</div>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <div class="feature-title">Manage Stock</div>
+                <div class="feature-sub">Automated inventory updates and low stock alerts.</div>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">View Reports</div>
+                <div class="feature-sub">Daily insights & trends to help you grow your business.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="auth-card auth-card--glass landing-auth">
+          {% block auth_content %}{% endblock %}
+        </section>
+      </div>
+    </main>
+
+    {% endif %}
+
+
+  </div>
+
+  {% if session.get('user_id') %}
+  <script src="/static/app.js"></script>
+  {% else %}
+  <script src="/static/auth.js"></script>
+  <script src="/static/auth_switch.js"></script>
+  {% endif %}
+
+  {% block page_scripts %}{% endblock %}
+</body>
+</html>
+

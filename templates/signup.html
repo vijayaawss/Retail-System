@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block auth_content %}
+
+  <div class="auth-pane auth-pane--active" id="signupPane">
+    <h1 class="auth-title">Create your shop account</h1>
+    <p class="auth-sub">Join to start tracking sales, manage inventory, and get instant reports.</p>
+
+    <form class="auth-form" method="post" id="signupForm" novalidate>
+      <div class="auth-field">
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" autocomplete="name" required />
+        <div class="error" id="nameErr"></div>
+      </div>
+
+      <div class="auth-field">
+        <label for="shop_name">Shop Name</label>
+        <input type="text" name="shop_name" id="shop_name" autocomplete="organization" required />
+        <div class="error" id="shopErr"></div>
+      </div>
+
+      <div class="auth-field">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" autocomplete="email" required />
+        <div class="error" id="emailErr"></div>
+      </div>
+
+      <div class="auth-field">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" autocomplete="new-password" required minlength="4" />
+        <div class="error" id="passErr"></div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Sign Up</button>
+
+      <div class="auth-footer">
+        <span class="muted">Already have an account?</span>
+        <a href="{{ url_for('login') }}" id="authGoLogin" class="auth-link">Login</a>
+
+      </div>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="server-flashes" hidden>
+          {% for category, message in messages %}
+            <div data-flash="{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+{% endblock %}
+
+
+
+
+

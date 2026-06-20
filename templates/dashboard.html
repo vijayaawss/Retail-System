@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="grid-head dashboard-head">
+    <div class="dashboard-head-left">
+    <div class="dashboard-greeting">Welcome back, {{ user_name }} 👋
+</div>
+      <div class="dashboard-subtitle">Here’s your business overview for today.</div>
+    </div>
+
+    <div class="dashboard-head-right">
+      <div class="date-selector" role="button" aria-label="Select date">
+        <span class="date-selector-icon" aria-hidden="true">📅</span>
+        <span class="date-selector-text">13 June 2026</span>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="cards dashboard-kpis">
+    <div class="card summary-card" data-animate>
+      <div class="card-icon">💰</div>
+      <div class="card-label">Today’s Revenue</div>
+      <div class="card-value">₹ {{ '%.2f'|format(total_sales) }}</div>
+      <div class="card-foot">Based on today’s completed sales.</div>
+    </div>
+
+    <div class="card summary-card" data-animate>
+      <div class="card-icon">📦</div>
+      <div class="card-label">Total Products</div>
+      <div class="card-value">{{ total_products }}</div>
+      <div class="card-foot">Currently tracked in your inventory.</div>
+    </div>
+
+    <div class="card summary-card warning" data-animate>
+      <div class="card-icon">📉</div>
+      <div class="card-label">Low Stock Alerts</div>
+      <div class="card-value">{{ low_stock|length }}</div>
+      <div class="card-foot">Stock threshold: ≤ 5 units.</div>
+    </div>
+
+
+    <div class="card summary-card" data-animate>
+      <div class="card-icon">📈</div>
+      <div class="card-label">Total Products Sold</div>
+      <div class="card-value" id="totalProductsSoldValue" aria-live="polite">—</div>
+      <div class="card-foot">Units sold today (real-time)</div>
+    </div>
+
+  </div>
+
+
+  <div class="split" style="grid-template-columns: 1.35fr 1fr;">
+  <div class="panel panel-sales-activity" data-animate>
+      <div class="panel-title">Peak Shopping Activity</div>
+      <div class="panel-sub">Store activity peaks based on hour-wise orders</div>
+
+      <div class="sales-activity-chart-wrap" style="margin-top:18px; min-height:340px;">
+        <canvas id="todaySalesChart" aria-label="Peak shopping activity" role="img"></canvas>
+      </div>
+
+      <div class="sales-insight" id="peakShoppingInsight" style="margin-top:12px; font-size:12.5px; font-weight:800; color: rgba(0,0,0,0.92);">
+        Peak shopping time: —
+      </div>
+    </div>
+
+
+
+    <div class="panel" data-animate>
+      <div class="panel-title">Low Stock</div>
+      <div class="panel-sub">Products that need restocking.</div>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table class="table" id="lowStockTable">
+          <thead>
+            <tr><th>Product</th><th>Stock</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% if low_stock %}
+              {% for p in low_stock %}
+                <tr class="low-row">
+                  <td>{{ p.name }}</td>
+                  <td>{{ p.stock }}</td>
+                  <td>
+                    <span class="badge badge-danger">Low</span>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="3" class="muted">No low stock items 🎉</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="lowStockData">
+    {{ (low_stock|tojson) | safe }}
+  </script>
+
+  <script type="application/json" id="todaySalesLabels">{{ labels|tojson }}</script>
+    <script type="application/json" id="todaySalesValues">{{ today_sales_by_time|tojson }}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+      const todaySalesLabels = JSON.parse(document.getElementById('todaySalesLabels')?.textContent || '[]');
+    const todaySalesValues = JSON.parse(document.getElementById('todaySalesValues')?.textContent || '[]');
+
+    const requiredXLabels = ['9 AM', '11 AM', '1 PM', '3 PM', '5 PM', '7 PM', '9 PM'];
+    const insightEl = document.getElementById('peakShoppingInsight');
+
+    // Force consistent light-axis styling for Dashboard chart
+    const AXIS_TEXT = '#111827';
+    const AXIS_GRID = 'rgba(37,99,235,0.16)';
+
+
+    let busyChart = null;
+
+    const totalProductsSoldValueEl = document.getElementById('totalProductsSoldValue');
+
+    const fmtInt = (n) => {
+      const num = Number(n);
+      return Number.isFinite(num) ? String(Math.trunc(num)) : '0';
+    };
+
+    async function fetchTodayUnitsSold() {
+      if (!totalProductsSoldValueEl) return;
+      try {
+        totalProductsSoldValueEl.textContent = 'Loading…';
+        const res = await fetch('/api/today/units-sold', { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('Bad response');
+        const data = await res.json();
+        const v = data?.total_units_sold;
+        totalProductsSoldValueEl.textContent = fmtInt(v);
+      } catch (e) {
+        // Keep previous value if API fails.
+      }
+    }
+
+    fetchTodayUnitsSold();
+    setInterval(fetchTodayUnitsSold, 5000);
+
+    const isLight = () => document.documentElement.getAttribute('data-theme') === 'light';
+
+    const BLUE_PRIMARY = '#2563EB';
+    const BLUE_SECONDARY = '#3B82F6';
+    const BLUE_LIGHT = '#DBEAFE';
+    const BLUE_ACCENT = '#60A5FA';
+
+    const getActivityLevel = (activityValue) => {
+      if (!Number.isFinite(activityValue)) return 'Low';
+      if (activityValue <= 30) return 'Low';
+      if (activityValue <= 60) return 'Medium';
+      return 'High';
+    };
+
+    // Data logic (proxy available in this project): `todaySalesValues` are hour-bucket activity units.
+    // We treat them as "orders" to compute the mapped activity value only.
+    const labels = (Array.isArray(todaySalesLabels) && todaySalesLabels.length)
+      ? (requiredXLabels.map((lbl, i) => todaySalesLabels[i] || lbl))
+      : requiredXLabels;
+
+    const orderCountsRaw = Array.isArray(todaySalesValues) ? todaySalesValues : [];
+    const toNum = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const orderCounts = requiredXLabels.map((_, i) => toNum(orderCountsRaw[i]));
+
+    const mapOrdersToActivity = (orders) => {
+      const o = Number(orders);
+      if (!Number.isFinite(o)) return 0;
+      if (o <= 0) return 0;
+      if (o <= 3) return 30;
+      if (o <= 6) return 60;
+      return 100;
+    };
+
+
+    const activityScores = orderCounts.map(mapOrdersToActivity);
+
+    const peakIndex = activityScores.indexOf(Math.max(...activityScores));
+    const peakLabel = labels[peakIndex] || '—';
+
+
+    // Parse peak time for insight: "Peak shopping time: X PM – Y PM".
+    // Map peak bucket to an approximate hour window.
+    const labelToRange = (lbl) => {
+      // lbl examples: "9 AM", "11 AM", "1 PM", ...
+      const m = (lbl || '').match(/(\d{1,2})\s*(AM|PM)/i);
+      if (!m) return lbl;
+      const hour = parseInt(m[1], 10);
+      const ap = m[2].toUpperCase();
+      // Use 2-hour window aligned with backend buckets: current start -> start+2
+      const end = hour + 2;
+      if (ap === 'AM') {
+        if (end >= 12) {
+          // 9 AM -> 11 AM (ok), 11 AM -> 1 PM crosses
+          const endAp = end >= 12 ? 'PM' : 'AM';
+          const endHour12 = end % 12 === 0 ? 12 : end % 12;
+          return `${hour} AM – ${endHour12} ${endAp}`;
+        }
+        const endHour = end === 12 ? 12 : end;
+        return `${hour} AM – ${endHour} AM`;
+      }
+      // PM
+      const endAp = end >= 12 ? 'PM' : 'PM';
+      const endHour12 = end % 12 === 0 ? 12 : end % 12;
+      return `${hour} PM – ${endHour12} ${endAp}`;
+    };
+
+    if (insightEl) {
+      insightEl.textContent = `Peak shopping time: ${labelToRange(peakLabel)}`;
+    }
+
+    const gridColor = isLight() ? 'rgba(37,99,235,0.18)' : 'rgba(37,99,235,0.22)';
+
+    // Theme-aware, high-contrast chart text (no faded greys)
+    const tickColor = isLight() ? '#000000' : '#FFFFFF';
+    const titleColor = isLight() ? '#000000' : '#FFFFFF';
+
+    // Explicit tick colors per theme to prevent any Chart.js/CSS fade overrides
+    const xTickColor = isLight() ? '#000000' : '#FFFFFF';
+    const yTickColor = isLight() ? '#000000' : '#FFFFFF';
+
+
+
+
+
+
+    const ctx = document.getElementById('todaySalesChart');
+    if (ctx) {
+      const lineColor = BLUE_PRIMARY;
+      const accentColor = BLUE_SECONDARY;
+      const areaFrom = isLight() ? 'rgba(37,99,235,0.28)' : 'rgba(37,99,235,0.34)';
+      const areaTo = isLight() ? 'rgba(37,99,235,0.04)' : 'rgba(37,99,235,0.02)';
+
+      busyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Activity Level',
+            data: activityScores,
+            fill: true,
+            tension: 0.45,
+            borderColor: lineColor,
+            pointBackgroundColor: (context) => BLUE_LIGHT,
+            pointBorderColor: (context) => {
+              const idx = context.dataIndex;
+              return idx === peakIndex ? accentColor : BLUE_PRIMARY;
+            },
+            pointBorderWidth: (context) => (context.dataIndex === peakIndex ? 3 : 2),
+            pointRadius: (context) => (context.dataIndex === peakIndex ? 6 : 5),
+            pointHoverRadius: (context) => (context.dataIndex === peakIndex ? 8 : 7),
+            pointHitRadius: 16,
+            borderWidth: 3,
+            backgroundColor: function(context) {
+              const chart = context.chart;
+              const { ctx } = chart;
+              const chartArea = chart.chartArea;
+              if (!chartArea) return areaFrom;
+              const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+              gradient.addColorStop(0, areaFrom);
+              gradient.addColorStop(1, areaTo);
+              return gradient;
+            },
+            // subtle glow for peak point
+            pointStyle: 'circle'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: isLight() ? 'rgba(255,255,255,0.98)' : 'rgba(12,18,32,0.92)',
+              borderColor: 'rgba(59,130,246,0.35)',
+              borderWidth: 1,
+              padding: 10,
+              titleColor: titleColor,
+              bodyColor: tickColor,
+              callbacks: {
+                title: (items) => items?.[0]?.label || '',
+                label: (ctx) => {
+                  const idx = ctx.dataIndex;
+                  const orders = orderCounts[idx] ?? 0;
+                  const activity = activityScores[idx] ?? 0;
+                  const level = getActivityLevel(activity);
+                  return `Orders: ${orders}  •  Activity Level: ${level}`;
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 950,
+            easing: 'easeOutQuart'
+          },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: {
+                /* Force dark axis labels for light theme */
+                color: AXIS_TEXT,
+                font: { size: 14, weight: 800, family: 'ui-sans-serif, system-ui' },
+                showLabelBackdrop: false,
+                backdropColor: 'rgba(0,0,0,0)',
+                padding: 10
+              },
+              border: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                color: AXIS_TEXT,
+                font: { size: 13, weight: 800, family: 'ui-sans-serif, system-ui' },
+                showLabelBackdrop: false,
+                backdropColor: 'rgba(0,0,0,0)',
+                callback: (value) => `${value}`,
+                padding: 8
+              },
+              grid: {
+                color: AXIS_GRID,
+                drawTicks: false,
+                drawBorder: false,
+                drawOnChartArea: true,
+                lineWidth: 1,
+                tickLength: 0
+              }
+            }
+          },
+
+          elements: {
+            point: {
+              // glow effect via shadow
+              shadowBlur: (context) => (context.dataIndex === peakIndex ? 10 : 0),
+              shadowColor: (context) => (context.dataIndex === peakIndex ? 'rgba(59,130,246,0.55)' : 'transparent')
+            }
+          }
+        }
+      });
+
+    }
+  </script>
+{% endblock %}
+
+

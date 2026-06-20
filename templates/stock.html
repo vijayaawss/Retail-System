@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="split">
+    <div class="panel panel-hero" data-animate>
+      <div class="panel-title">Stock Management</div>
+      <div class="panel-sub">Create, update, or delete products. Low stock rows are highlighted.</div>
+
+      <form method="post" class="form form-compact" id="stockForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label>Action</label>
+            <select name="action" id="action" required>
+              <option value="create">Add Product</option>
+              <option value="update">Update Product</option>
+              <option value="delete">Delete Product</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Product ID (for update/delete)</label>
+            <input type="number" name="product_id" id="product_id" min="1" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Product Name</label>
+            <input type="text" name="name" id="name" required />
+            <div class="error" id="nameErr"></div>
+          </div>
+
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Price (₹)</label>
+            <input type="number" name="price" id="price" step="0.01" min="0" value="0" required />
+          </div>
+          <div class="field">
+            <label>Stock</label>
+            <input type="number" name="stock" id="stock" min="0" value="0" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit">Apply Changes</button>
+          <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Back</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel" data-animate>
+      <div class="panel-title">Your Products</div>
+      <div class="panel-sub">Live highlighting for low stock.</div>
+
+      <div class="table-tools">
+        <input type="search" id="filterInput" placeholder="Filter products..." />
+      </div>
+
+      <div class="table-wrap">
+        <table class="table" id="productsTable">
+          <thead>
+            <tr><th>ID</th><th>Product</th><th>Price</th><th>Stock</th><th>Status</th></tr>
+          </thead>
+
+          <tbody>
+            {% for p in products %}
+              <tr class="{{ 'low-row' if p.stock <=5 else '' }}" data-stock="{{ p.stock }}">
+                <td>{{ p.id }}</td>
+                <td>{{ p.name }}</td>
+                <td>₹ {{ '%.2f'|format(p.price) }}</td>
+                <td>{{ p.stock }}</td>
+                <td>
+
+                  {% if p.stock <=5 %}
+                    <span class="badge badge-danger">Low</span>
+                  {% else %}
+                    <span class="badge badge-ok">OK</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

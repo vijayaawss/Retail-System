@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block auth_content %}
+
+  <div class="auth-pane auth-pane--active" id="loginPane">
+    <h1 class="auth-title">Welcome Back!</h1>
+    <p class="auth-sub">Login to access your dashboard.</p>
+
+    <form class="auth-form" method="post" id="loginForm" novalidate>
+      <div class="auth-field">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" autocomplete="email" required />
+        <div class="error" id="emailErr"></div>
+      </div>
+
+      <div class="auth-field">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" autocomplete="current-password" required />
+        <div class="error" id="passErr"></div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Login</button>
+
+      <div class="auth-footer">
+        <span class="muted">New here?</span>
+        <a href="{{ url_for('signup') }}" id="authGoSignup" class="auth-link">Create Account</a>
+
+      </div>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="server-flashes" hidden>
+          {% for category, message in messages %}
+            <div data-flash="{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+{% endblock %}
+
+
+
+
+

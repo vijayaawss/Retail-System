@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="grid-head reports-head">
+    <div>
+      <div class="hello">Monthly Report</div>
+      <div class="subtitle">Monthly revenue analytics</div>
+    </div>
+  </div>
+
+  <div class="panel panel-hero" data-animate style="margin-top:6px;">
+    <div class="panel-title">Monthly Revenue Filter</div>
+    <div class="panel-sub">Choose a month to view revenue summary and daily breakdown.</div>
+
+    <form class="form form-compact" method="get" action="{{ url_for('monthly_reports') }}" style="margin-top:14px;">
+      <div class="field">
+        <label for="monthSelect">Month</label>
+        <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+          <input id="monthSelect" type="month" name="month" value="{{ selected_month_value }}" required />
+          <button class="btn" type="submit" style="white-space:nowrap;">View Report</button>
+          <a class="btn btn-ghost" href="{{ url_for('monthly_reports_download', month=selected_month_value) }}" style="text-decoration:none; white-space:nowrap;">Download Report</a>
+
+
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="business-summary-shell" data-animate style="margin-top:18px;">
+    <div class="business-summary-head">
+      <div class="business-summary-title">Monthly Revenue Report</div>
+      <div class="business-summary-sub">Overview of key performance metrics for {{ month_display }}</div>
+    </div>
+
+    <div class="business-summary-grid" style="gap:16px;">
+      <div class="business-summary-row" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="elev-metric-card elev-metric-card--premium" style="height:160px;">
+          <div class="elev-metric-top">
+            <div class="mini-square-badge mini-square-badge--muted" aria-hidden="true">💰</div>
+            <div class="metric-label">Monthly Revenue</div>
+          </div>
+          <div class="metric-value metric-value--plain">₹ {{ '{:,.2f}'.format(monthly_revenue|float) }}</div>
+        </div>
+
+        <div class="elev-metric-card elev-metric-card--premium" style="height:160px;">
+          <div class="elev-metric-top">
+            <div class="mini-square-badge mini-square-badge--muted" aria-hidden="true">🗓️</div>
+            <div class="metric-label">Previous Month Revenue</div>
+          </div>
+          <div class="metric-value metric-value--medium">₹ {{ '{:,.2f}'.format(prev_month_revenue|float) }}</div>
+        </div>
+
+        <div class="elev-metric-card elev-metric-card--premium" style="height:160px;">
+          <div class="elev-metric-top">
+            <div class="mini-square-badge mini-square-badge--muted" aria-hidden="true">🧾</div>
+            <div class="metric-label">Total Orders This Month</div>
+          </div>
+          <div class="metric-value metric-value--highlight">{{ total_orders_this_month }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel reports-table-wrap" data-animate style="margin-top:14px;">
+    <div class="reports-table-head">
+      <div class="reports-table-title">Daily Breakdown – {{ month_display }}</div>
+      <div class="reports-table-sub">Orders & revenue per day</div>
+    </div>
+
+    <div class="reports-table-box">
+      <table class="table reports-table" id="monthlyBreakdownTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Orders</th>
+            <th>Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if daily_rows %}
+            {% for r in daily_rows %}
+              <tr class="sales-row">
+                <td>{{ r.day_label }}</td>
+                <td>{{ r.orders }}</td>
+                <td>₹ {{ '{:,.0f}'.format(r.revenue|float) }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="3">
+                <div class="table-empty">
+                  <div class="table-empty-illus" aria-hidden="true">📅</div>
+                  <div class="table-empty-title">No data for this month</div>
+                  <div class="table-empty-sub">Try selecting a different month.</div>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:14px; gap:8px; flex-wrap:wrap;">
+        {% if pagination.has_prev %}
+          <a class="btn btn-ghost" style="text-decoration:none;" href="{{ url_for('monthly_reports', month=selected_month_value, page=pagination.prev_page) }}">&laquo; Prev</a>
+        {% endif %}
+
+        <div class="panel" style="padding:10px 14px; border-radius:14px; background:rgba(255,255,255,0.03); box-shadow:none; border:1px solid rgba(255,255,255,0.12);">
+          <div style="font-weight:950; font-size:13px; color:var(--text) !important;">
+            Page {{ pagination.page }} of {{ pagination.total_pages }}
+          </div>
+        </div>
+
+
+        {% if pagination.has_next %}
+          <a class="btn btn-ghost" style="text-decoration:none;" href="{{ url_for('monthly_reports', month=selected_month_value, page=pagination.next_page) }}">Next &raquo;</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
