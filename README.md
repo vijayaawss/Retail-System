@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Retail Management System (DailyInsight)
 
 ## How to run
@@ -75,3 +76,6 @@
   - `python-dotenv`
   - *(PDF generation uses `reportlab` inside `app.py` during download; it is imported at runtime.)*
 
+=======
+# Retail-System
+>>>>>>> 52f2b944fe4dfaaa3b14ff8486566dfd6cd85828
