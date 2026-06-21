@@ -76,6 +76,70 @@
   - `python-dotenv`
   - *(PDF generation uses `reportlab` inside `app.py` during download; it is imported at runtime.)*
 
-=======
-# Retail-System
->>>>>>> 52f2b944fe4dfaaa3b14ff8486566dfd6cd85828
+## EC2 Deployment Steps
+
+### 1. Connect to EC2
+
+```
+ssh -i key.pem ec2-user@<EC2-Public-IP>
+```
+
+### 2. Clone Repository
+
+```
+git clone <repository-url>
+cd Retail-System
+```
+
+### 3. Create Virtual Environment
+
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 4. Install Dependencies
+
+```
+pip install -r requirements.txt
+```
+
+### 5. Start Gunicorn
+
+```
+nohup gunicorn --bind 127.0.0.1:5000 app:app > gunicorn.log 2>&1 &
+```
+
+### 6. Configure Nginx
+
+Edit:
+
+```
+sudo nano /etc/nginx/nginx.conf
+```
+
+Add the following inside the `server` block:
+
+```
+location / {
+    proxy_pass http://127.0.0.1:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Save and restart Nginx:
+
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+```
+
+### 7. Access Application
+
+http://<EC2-Public-IP>
+
+
+
