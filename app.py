@@ -342,17 +342,20 @@ def create_app():
                     )
                     
                     # SNS START
-                    cur.execute(
-                        "SELECT name, stock FROM products WHERE id=%s AND user_id=%s",
-                        (product_id, user_id),
-                        )
+                   cur.execute(
+                       "SELECT name, stock FROM products WHERE id=%s AND user_id=%s",
+                       (product_id, user_id),
+                       )
                     product = cur.fetchone()
-                    if product and product["stock"] <= 5:sns = boto3.client("sns", region_name="us-east-1")
-                    sns.publish(
-                        TopicArn="arn:aws:sns:us-east-1:116904976040:dailyinsight-alerts",
-                        Subject="Low Stock Alert",
-                        Message=f"{product['name']} stock is low. Remaining stock: {product['stock']}"
-                        )
+
+                    sns = boto3.client("sns", region_name="us-east-1")
+
+                    if product and product["stock"] <= 5:
+                       sns.publish(
+                       TopicArn="arn:aws:sns:us-east-1:116904976040:dailyinsight-alerts",
+                       Subject="Low Stock Alert",
+                       Message=f"{product['name']} stock is low. Remaining stock: {product['stock']}"
+                       )
                     # SNS END
                     
                     conn.commit()
@@ -956,5 +959,5 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
