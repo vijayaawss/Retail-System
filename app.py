@@ -835,7 +835,13 @@ def create_app():
         from reportlab.lib.styles import getSampleStyleSheet
 
         month_display = selected_month_date.strftime("%B %Y")
-        filename = f"Monthly_Report_{selected_month_date.strftime('%B_%Y')}.pdf"
+        filename = (
+            f"User_{user_id}_Monthly_Report_"
+            f"{selected_month_date.strftime('%B_%Y')}.pdf"
+         )
+
+         print("CURRENT USER ID:", user_id)
+         print("FILENAME:", filename)
 
         buffer = BytesIO()
         styles = getSampleStyleSheet()
