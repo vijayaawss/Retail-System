@@ -345,7 +345,7 @@ def create_app():
                    cur.execute(
                        "SELECT name, stock FROM products WHERE id=%s AND user_id=%s",
                        (product_id, user_id),
-                       )
+                    )
                     product = cur.fetchone()
 
                     sns = boto3.client("sns", region_name="us-east-1")
