@@ -39,15 +39,13 @@ CREATE TABLE IF NOT EXISTS sales (
   total_price DECIMAL(12,2) NOT NULL,
   sold_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_sales_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT fk_sales_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+  CONSTRAINT fk_sales_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+  INDEX idx_sales_user_date (user_id, sold_at),
+  INDEX idx_sales_product (product_id)
 );
 
 
--- Indexes
--- Avoid re-running failures in older MySQL versions.
--- If your MySQL doesn't allow CREATE INDEX IF NOT EXISTS, re-run by starting from a fresh DB.
-CREATE INDEX idx_sales_user_date ON sales(user_id, sold_at);
-CREATE INDEX idx_sales_product ON sales(product_id);
+
 
 
 

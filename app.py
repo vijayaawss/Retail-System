@@ -1,5 +1,7 @@
 import os
 import re
+import boto3
+from io import BytesIO
 from datetime import date, datetime, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -15,18 +17,17 @@ def create_app():
 
     # MySQL connection (root/root, 127.0.0.1)
     app.config.update(
-        DB_HOST=os.getenv("MYSQL_HOST", "127.0.0.1"),
+        DB_HOST=os.getenv("MYSQL_HOST", "database-1.c8jq4gc42gdl.us-east-1.rds.amazonaws.com"),
         DB_PORT=int(os.getenv("MYSQL_PORT", "3306")),
-        DB_USER=os.getenv("MYSQL_USER", "root"),
-        DB_PASSWORD=os.getenv("MYSQL_PASSWORD", "root"),
+        DB_USER=os.getenv("MYSQL_USER", "admin"),
+        DB_PASSWORD=os.getenv("MYSQL_PASSWORD", "vijaya21"),
         DB_NAME=os.getenv("MYSQL_DB", "dailyinsight"),
-    )
-
-
-
+        )
+        
     def get_db():
         return mysql.connector.connect(
             host=app.config["DB_HOST"],
+            port=app.config["DB_PORT"],
             user=app.config["DB_USER"],
             password=app.config["DB_PASSWORD"],
             database=app.config["DB_NAME"],
@@ -339,6 +340,21 @@ def create_app():
                         "UPDATE products SET stock = stock - %s WHERE id=%s AND user_id=%s",
                         (quantity, product_id, user_id),
                     )
+                    
+                    # SNS START
+                    cur.execute(
+                        "SELECT name, stock FROM products WHERE id=%s AND user_id=%s",
+                        (product_id, user_id),
+                        )
+                    product = cur.fetchone()
+                    if product and product["stock"] <= 5:sns = boto3.client("sns", region_name="us-east-1")
+                    sns.publish(
+                        TopicArn="arn:aws:sns:us-east-1:116904976040:dailyinsight-alerts",
+                        Subject="Low Stock Alert",
+                        Message=f"{product['name']} stock is low. Remaining stock: {product['stock']}"
+                        )
+                    # SNS END
+                    
                     conn.commit()
                     flash("Sale recorded successfully.", "success")
                     return redirect(url_for("dashboard"))
@@ -887,14 +903,36 @@ def create_app():
         doc.build(elements)
 
         pdf_bytes = buffer.getvalue()
+        
+        
+        
+        try:
+            s3 = boto3.client("s3")
+            response = s3.put_object(
+                Bucket="dailyinsight-reports",
+                Key=filename,
+                Body=pdf_bytes,
+                ContentType="application/pdf"
+                )
+            print("UPLOAD SUCCESS")
+            print(response)
+        except Exception as e:
+            print("UPLOAD FAILED:", e)
+
+
         from flask import Response
         return Response(
             pdf_bytes,
             mimetype="application/pdf",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
+        
+        
 
 
+    
+    
+    
     @app.get("/api/alerts/low-stock")
 
     @login_required
@@ -910,6 +948,9 @@ def create_app():
             return jsonify({"items": low_stock})
 
     return app
+
+
+
 
 
 app = create_app()
