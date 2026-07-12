@@ -32,10 +32,13 @@ It enables businesses to manage inventory, record sales, monitor stock levels, a
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** HTML, CSS, JavaScript, Jinja2
-- **Backend:** Python, Flask
-- **Database:** MySQL
-- **Deployment:** AWS EC2, Gunicorn, Nginx, Route 53
+| Category | Technologies |
+|----------|--------------|
+| Frontend | HTML, CSS, JavaScript, Jinja2 |
+| Backend | Python, Flask |
+| Database | MySQL, Amazon RDS |
+| AWS Services | EC2, S3, Glue, SNS, QuickSight, Route 53 |
+| Server | Gunicorn, Nginx |
 
 ---
 
