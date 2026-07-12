@@ -1,81 +1,160 @@
-<<<<<<< HEAD
-# Retail Management System (DailyInsight)
+# DailyInsight – Smart Retail Management System
 
-## How to run
+DailyInsight is a full-stack retail management system developed for small retailers and shop owners.
+It enables businesses to manage inventory, record sales, monitor stock levels, and generate insightful reports through an easy-to-use dashboard.
 
-1. **Start MySQL** and create the database/schema:
-   - Open `db.sql` and run it in your MySQL client (or import the file).
-   - This script creates the `dailyinsight` database with tables: `users`, `products`, `sales`.
+---
 
-2. **Create a Python virtual environment** (recommended):
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
+## 🧩 Features
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 🔐 User Authentication
+- Secure Sign Up & Login with password hashing.
 
-4. **Configure database connection (optional)**
-   - The app uses these environment variables if set:
-     - `MYSQL_HOST` (default: `127.0.0.1`)
-     - `MYSQL_PORT` (default: `3306`)
-     - `MYSQL_USER` (default: `root`)
-     - `MYSQL_PASSWORD` (default: `root`)
-     - `MYSQL_DB` (default: `dailyinsight`)
+### 📦 Inventory Management
+- Add, update, delete, and track product inventory in real time.
 
-5. **Run the server**:
-   ```bash
-   python app.py
-   ```
+### 💰 Sales Management
+- Record sales with automatic stock deduction.
 
-6. Open the app in your browser (default Flask port):
-   - Usually `http://127.0.0.1:5000`
+### 📊 Analytics Dashboard
+- Monitor daily revenue, sales insights, and business performance.
 
-## Workflow
+### ⚠️ Low Stock Alerts
+- Identify low-stock and out-of-stock products instantly.
 
-- **Signup/Login**
-  - Users create an account (`/signup`) and then log in (`/login`).
-  - Passwords are stored as hashes using `werkzeug.security`.
-  - Logged-in users are protected by a `login_required` decorator.
+### 📄 Reports
+- Generate and download daily and monthly sales reports in PDF format.
 
-- **Dashboard** (`/dashboard`)
-  - Shows daily totals (today’s revenue, products count), low-stock alerts, and time-bucket activity for charting.
+### 💳 Payment Analytics
+- Analyze sales based on Cash and UPI payment methods.
 
-- **Sales entry** (`/sales`)
-  - User records a sale for a product.
-  - The server validates stock availability, inserts the row into `sales`, and decrements `products.stock`.
+---
 
-- **Stock management** (`/stock`)
-  - Create/update/delete products.
-  - All product operations are scoped to the logged-in user.
+## 🛠️ Tech Stack
 
-- **Reports** (`/reports`)
-  - Generates a daily report for a selected date via query string (`?date=YYYY-MM-DD`).
-  - Includes revenue summaries, payment split (Cash vs UPI), top product, and low/out-of-stock insights.
+- **Frontend:** HTML, CSS, JavaScript, Jinja2
+- **Backend:** Python, Flask
+- **Database:** MySQL
+- **Deployment:** AWS EC2, Gunicorn, Nginx, Route 53
 
-- **Monthly reports** (`/monthly-reports` + download)
-  - Generates month-level aggregates and a paginated daily breakdown.
-  - Download endpoint generates a PDF using `reportlab`:
-    - `/monthly-reports-download?month=YYYY-MM`
+---
 
-- **Alerts API** (`/api/alerts/low-stock` and `/api/today/units-sold`)
-  - Returns JSON responses used by the frontend for dashboard/notification widgets.
+## ☁️ AWS Architecture Overview
 
-## Languages / technologies used
+![Architecture Diagram](Architecture-Diagram.png)
 
-- **Python**: Flask web app (`app.py`) + server-side logic
-- **HTML/Jinja2**: templates in `templates/`
-- **CSS/JavaScript**: frontend assets in `static/`
-- **MySQL**: database (schema in `db.sql`)
-- **Additional Python libs** (from `requirements.txt`):
-  - `Flask`
-  - `mysql-connector-python`
-  - `python-dotenv`
-  - *(PDF generation uses `reportlab` inside `app.py` during download; it is imported at runtime.)*
+---
 
-=======
-# Retail-System
->>>>>>> 52f2b944fe4dfaaa3b14ff8486566dfd6cd85828
+# 📷 Application Screenshots
+
+| Page | Screenshot |
+|------|------------|
+| Register Page | ![](images/application/RegisterPage.png) |
+| Login Page | ![](images/application/LoginPage.png) |
+| Dashboard | ![](images/application/DashboardPage.png) |
+| Stock Management | ![](images/application/StockManagementPage.png) |
+| Sales Entry | ![](images/application/SalesEntryPage.png) |
+| Daily Reports | ![](images/application/DailyReportsPage.png) |
+| Monthly Reports | ![](images/application/MonthlyReportPage.png) |
+
+---
+
+# ☁️ AWS Services Used
+
+| AWS Service | Screenshot |
+|-------------|------------|
+| Route 53 | ![](images/aws/Route53.png) |
+| Amazon EC2 | ![](images/aws/EC2.png) |
+| Amazon RDS | ![](images/aws/RDS.png) |
+| AWS Glue | ![](images/aws/Glue.png) |
+| Amazon S3 | ![](images/aws/S3.png) |
+| Amazon SNS | ![](images/aws/SNS.png) |
+| Amazon QuickSight | ![](images/aws/QuickSight.png) |
+
+---
+
+# 🚀 Deployment Steps
+
+## 1. Launch Amazon EC2 Instance
+
+```bash
+ssh -i your-key.pem ec2-user@<EC2-Public-IP>
+```
+
+## 2. Clone Repository
+
+```bash
+git clone <repository-url>
+cd Retail-System
+```
+
+## 3. Create Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+## 4. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## 5. Configure Amazon RDS
+
+Import the database into Amazon RDS.
+
+```bash
+mysql -h <RDS-ENDPOINT> -u admin -p dailyinsight < db.sql
+```
+
+Update the RDS endpoint, username, password and database name in `app.py`.
+
+## 6. Configure Gunicorn
+
+```bash
+sudo nano /etc/systemd/system/flaskapp.service
+sudo systemctl daemon-reload
+sudo systemctl enable flaskapp
+sudo systemctl start flaskapp
+sudo systemctl status flaskapp
+```
+
+## 7. Configure Nginx
+
+```bash
+sudo nano /etc/nginx/nginx.conf
+```
+
+Configure reverse proxy:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Restart Nginx:
+
+```bash
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+```
+
+## 8. Access the Application
+
+```
+http://<EC2-Public-IP>
+```
+
+---
+
+## 👨‍💻 Author
+
+**Vijaya**
