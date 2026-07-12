@@ -8,25 +8,12 @@ It enables businesses to manage inventory, record sales, monitor stock levels, a
 ## 🧩 Features
 
 ### 🔐 User Authentication
-- Secure Sign Up & Login with password hashing.
-
 ### 📦 Inventory Management
-- Add, update, delete, and track product inventory in real time.
-
 ### 💰 Sales Management
-- Record sales with automatic stock deduction.
-
 ### 📊 Analytics Dashboard
-- Monitor daily revenue, sales insights, and business performance.
-
 ### ⚠️ Low Stock Alerts
-- Identify low-stock and out-of-stock products instantly.
-
-### 📄 Reports
-- Generate and download daily and monthly sales reports in PDF format.
-
+### 📄 Daily/Monthly Reports
 ### 💳 Payment Analytics
-- Analyze sales based on Cash and UPI payment methods.
 
 ---
 
