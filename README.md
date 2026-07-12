@@ -59,6 +59,7 @@ It enables businesses to manage inventory, record sales, monitor stock levels, a
 | Sales Entry | ![](images/application/SalesEntryPage.png) |
 | Daily Reports | ![](images/application/DailyReportsPage.png) |
 | Monthly Reports | ![](images/application/MonthlyReportPage.png) |
+| Report PDF | ![](images/application/ReportPDF.png) |
 
 ---
 
