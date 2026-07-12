@@ -145,6 +145,6 @@ http://<EC2-Public-IP>
 
 ---
 
-## 👨‍💻 Author
+## 👩‍💻  Author
 
 **Vijaya Sonawane**
