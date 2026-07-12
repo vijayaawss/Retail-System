@@ -7,13 +7,13 @@ It enables businesses to manage inventory, record sales, monitor stock levels, a
 
 ## 🧩 Features
 
-### 🔐 User Authentication
-### 📦 Inventory Management
-### 💰 Sales Management
-### 📊 Analytics Dashboard
-### ⚠️ Low Stock Alerts
-### 📄 Daily/Monthly Reports
-### 💳 Payment Analytics
+🔐 User Authentication
+📦 Inventory Management
+💰 Sales Management
+📊 Analytics Dashboard
+⚠️ Low Stock Alerts
+📄 Daily & Monthly PDF Reports
+💳 Cash & UPI Payment Analytics
 
 ---
 
