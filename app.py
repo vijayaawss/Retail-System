@@ -304,8 +304,7 @@ def create_app():
             product_id = int(request.form.get("product_id"))
             payment_type = (request.form.get("payment_type") or "").strip()
             quantity = int(request.form.get("quantity"))
-            unit_price = float(request.form.get("unit_price"))
-            total_price = float(request.form.get("total_price"))
+            
 
             if payment_type not in ("Cash", "UPI"):
                 flash("Payment type is required.", "error")
@@ -330,6 +329,8 @@ def create_app():
                     if prod["stock"] < quantity:
                         flash("Not enough stock for this sale.", "error")
                         return redirect(url_for("sales_entry"))
+                    unit_price = float(prod["price"])
+                    total_price = unit_price * quantity
 
                     cur.execute(
                         "INSERT INTO sales (user_id, product_id, quantity, payment_type, unit_price, total_price) VALUES (%s,%s,%s,%s,%s,%s)",
@@ -343,16 +344,19 @@ def create_app():
                     
                     # SNS START
                     cur.execute(
-                        "SELECT name, stock FROM products WHERE id=%s AND user_id=%s",
-                        (product_id, user_id),
-                        )
+                       "SELECT name, stock FROM products WHERE id=%s AND user_id=%s",
+                       (product_id, user_id),
+                    )
                     product = cur.fetchone()
-                    if product and product["stock"] <= 5:sns = boto3.client("sns", region_name="us-east-1")
-                    sns.publish(
-                        TopicArn="arn:aws:sns:us-east-1:116904976040:dailyinsight-alerts",
-                        Subject="Low Stock Alert",
-                        Message=f"{product['name']} stock is low. Remaining stock: {product['stock']}"
-                        )
+
+                    sns = boto3.client("sns", region_name="us-east-1")
+
+                    if product and product["stock"] <= 5:
+                       sns.publish(
+                       TopicArn="arn:aws:sns:us-east-1:116904976040:mytopic",
+                       Subject="Low Stock Alert",
+                       Message=f"{product['name']} stock is low. Remaining stock: {product['stock']}"
+                       )
                     # SNS END
                     
                     conn.commit()
@@ -832,7 +836,13 @@ def create_app():
         from reportlab.lib.styles import getSampleStyleSheet
 
         month_display = selected_month_date.strftime("%B %Y")
-        filename = f"Monthly_Report_{selected_month_date.strftime('%B_%Y')}.pdf"
+        filename = (
+            f"User_{user_id}_Monthly_Report_"
+            f"{selected_month_date.strftime('%B_%Y')}.pdf"
+        )
+
+        print("CURRENT USER ID:", user_id)
+        print("FILENAME:", filename)
 
         buffer = BytesIO()
         styles = getSampleStyleSheet()
@@ -909,7 +919,7 @@ def create_app():
         try:
             s3 = boto3.client("s3")
             response = s3.put_object(
-                Bucket="dailyinsight-reports",
+                Bucket="dailyinsight-reportss",
                 Key=filename,
                 Body=pdf_bytes,
                 ContentType="application/pdf"
@@ -956,5 +966,4 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
+    app.run(host="0.0.0.0", port=5000, debug=True)
