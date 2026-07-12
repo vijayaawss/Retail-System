@@ -1,7 +1,6 @@
-# DailyInsight – Smart Retail Management System
+# 🏪 DailyInsight – Smart Retail Management System
 
-DailyInsight is a full-stack retail management system developed for small retailers and shop owners.
-It enables businesses to manage inventory, record sales, monitor stock levels, and generate insightful reports through an easy-to-use dashboard.
+DailyInsight is a cloud-based retail management system developed for grocery stores, supermarkets, and local retail businesses. It helps retailers efficiently manage inventory, track sales, monitor stock levels, and generate business reports through an intuitive dashboard. Powered by AWS cloud services, the system provides secure deployment, data analytics, and automated notifications for smarter retail management.
 
 ---
 
