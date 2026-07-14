@@ -30,14 +30,14 @@ It helps retailers efficiently manage inventory, track sales, monitor stock leve
 ---
 # 📈 System Workflow
 
-1. User registers or logs into the application.
-2. Products are added and inventory is managed.
-3. Sales transactions are recorded.
-4. Stock levels are automatically updated after each sale.
-5. Low-stock products trigger email notifications through Amazon SNS.
-6. Sales data is processed using AWS Glue.
-7. Processed reports are stored in Amazon S3.
-8. Amazon QuickSight visualizes business insights through interactive dashboards.
+1. **User Authentication** – Retailer registers or logs into the application.
+2. **Inventory Management** – Add, update, or delete product details and stock.
+3. **Sales Management** – Record customer sales and generate invoices.
+4. **Automatic Stock Update** – Stock quantity is reduced automatically after each sale.
+5. **Low Stock Detection** – The system identifies products that fall below the stock threshold.
+6. **Email Notifications** – Low-stock alerts are automatically sent to the retailer.
+7. **Report Generation** – Generate daily and monthly PDF sales reports.
+8. **Business Analytics** – View interactive dashboards for sales, revenue, and inventory insights.
 
 ---
 
