@@ -1,6 +1,7 @@
 # 🏪 DailyInsight – Smart Retail Management System
 
-DailyInsight is a cloud-based retail management system developed for grocery stores, supermarkets, and local retail businesses. It helps retailers efficiently manage inventory, track sales, monitor stock levels, and generate business reports through an intuitive dashboard. Powered by AWS cloud services, the system provides secure deployment, data analytics, and automated notifications for smarter retail management.
+DailyInsight is a cloud-based retail management system developed for grocery stores, supermarkets, and local retail businesses. 
+It helps retailers efficiently manage inventory, track sales, monitor stock levels, and generate business reports through an intuitive dashboard. Powered by AWS cloud services, the system provides secure deployment, data analytics, and automated notifications for smarter retail management.
 
 ---
 
@@ -31,6 +32,19 @@ DailyInsight is a cloud-based retail management system developed for grocery sto
 ## ☁️ AWS Architecture Overview
 
 ![Architecture Diagram](Architecture-Diagram.png)
+
+---
+
+# 📈 System Workflow
+
+1. User registers or logs into the application.
+2. Products are added and inventory is managed.
+3. Sales transactions are recorded.
+4. Stock levels are automatically updated after each sale.
+5. Low-stock products trigger email notifications through Amazon SNS.
+6. Sales data is processed using AWS Glue.
+7. Processed reports are stored in Amazon S3.
+8. Amazon QuickSight visualizes business insights through interactive dashboards.
 
 ---
 
@@ -142,6 +156,16 @@ sudo systemctl enable nginx
 ```
 http://<EC2-Public-IP>
 ```
+
+---
+
+# 🚀 Future Enhancements
+
+- 🤖 AI-Based Sales Prediction
+- 📱 Mobile Application Support
+- 🏪 Multi-Store Management
+- 📦 Supplier & Purchase Order Management
+- 🌐 Multi-Language Support
 
 ---
 
