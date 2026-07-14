@@ -28,13 +28,6 @@ It helps retailers efficiently manage inventory, track sales, monitor stock leve
 | Server | Gunicorn, Nginx |
 
 ---
-
-## ☁️ AWS Architecture Overview
-
-![Architecture Diagram](Architecture-Diagram.png)
-
----
-
 # 📈 System Workflow
 
 1. User registers or logs into the application.
@@ -47,6 +40,13 @@ It helps retailers efficiently manage inventory, track sales, monitor stock leve
 8. Amazon QuickSight visualizes business insights through interactive dashboards.
 
 ---
+
+## ☁️ AWS Architecture Overview
+
+![Architecture Diagram](Architecture-Diagram.png)
+
+---
+
 
 # 📷 Application Screenshots
 
